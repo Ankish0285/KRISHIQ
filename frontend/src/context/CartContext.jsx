@@ -23,13 +23,19 @@ export function CartProvider({ children }) {
   const removeItem = (id) => persist(items.filter((i) => i.id !== id));
 
   const setQuantity = (id, quantity) => {
+    if (quantity <= 0) {
+      persist(items.filter((i) => i.id !== id));
+      return;
+    }
     persist(items.map((i) => (i.id === id ? { ...i, quantity } : i)));
   };
+
+  const clear = () => persist([]);
 
   const total = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
 
   const value = useMemo(
-    () => ({ items, addItem, removeItem, setQuantity, total, count: items.length }),
+    () => ({ items, addItem, removeItem, setQuantity, clear, total, count: items.reduce((sum, item) => sum + item.quantity, 0) }),
     [items, total]
   );
 

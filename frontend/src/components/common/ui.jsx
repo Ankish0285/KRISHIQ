@@ -20,7 +20,7 @@ export function Button({
     secondary:
       "border border-emerald-200 bg-white text-primary-green hover:bg-light-green dark:border-emerald-800 dark:bg-transparent dark:text-leaf",
     onDark:
-      "border border-white/25 bg-transparent text-white hover:bg-white/10",
+      "border border-slate-300 bg-transparent text-slate-700 hover:bg-slate-100 dark:border-white/25 dark:text-white dark:hover:bg-white/10",
     white:
       "bg-white text-[#14532D] hover:bg-light-green",
     blue: "bg-ai-blue text-white hover:bg-blue-700",

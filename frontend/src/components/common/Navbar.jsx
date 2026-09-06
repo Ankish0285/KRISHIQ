@@ -10,9 +10,10 @@ import { clsx } from "./cn.js";
 
 const links = [
   { href: "/", label: "Home" },
+  { href: "/marketplace", label: "Marketplace" },
   { href: "/#how-it-works", label: "How It Works" },
-  { href: "/#features", label: "Features" },
-  { href: "/#ai", label: "AI Intelligence" },
+  { href: "/#farmers", label: "For Farmers" },
+  { href: "/#buyers", label: "For Buyers" },
   { href: "/#about", label: "About" },
 ];
 
@@ -69,7 +70,11 @@ export default function Navbar() {
             <a
               key={l.label}
               href={l.href}
-              className="text-[15px] font-medium text-slate-600 transition hover:text-primary-green dark:text-[#94A3B8] dark:hover:text-leaf"
+              aria-current={location.hash === l.href.split("#")[1] || (!location.hash && l.href === "/") ? "page" : undefined}
+              className={clsx(
+                "relative py-2 text-[15px] font-medium text-slate-600 transition hover:text-primary-green dark:text-[#94A3B8] dark:hover:text-leaf",
+                ((location.hash === l.href.split("#")[1]) || (!location.hash && l.href === "/")) && "text-primary-green dark:text-leaf after:absolute after:inset-x-0 after:-bottom-1 after:h-0.5 after:bg-leaf after:content-['']"
+              )}
             >
               {l.label}
             </a>

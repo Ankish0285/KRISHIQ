@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, MapPin, Sparkles, Truck, UserRound } from "lucide-react";
 import { HERO_SLIDES } from "../../utils/heroSlides.js";
 
 const INTERVAL = 5000;
@@ -68,6 +68,13 @@ export default function HeroSlider() {
         <p className="mt-1 text-[15px] font-semibold text-[#F8FAFC]">{slide.value}</p>
       </div>
 
+      <div className="absolute inset-x-4 bottom-14 z-10 grid grid-cols-2 gap-2 sm:inset-x-8 sm:grid-cols-4">
+        <SupplyNode icon={UserRound} label="Farmer" value="850 kg" />
+        <SupplyNode icon={Sparkles} label="AI match" value="94% fit" tone="blue" />
+        <SupplyNode icon={MapPin} label="Buyer" value="Delhi · 187 km" />
+        <SupplyNode icon={Truck} label="Delivery" value="24 hrs" tone="blue" />
+      </div>
+
       <button
         type="button"
         aria-label="Previous slide"
@@ -100,6 +107,18 @@ export default function HeroSlider() {
           />
         ))}
       </div>
+    </div>
+  );
+}
+
+function SupplyNode({ icon: Icon, label, value, tone = "green" }) {
+  return (
+    <div className="min-w-0 border border-white/15 bg-[#06150F]/70 p-2.5 backdrop-blur-md sm:p-3">
+      <div className="flex items-center gap-1.5">
+        <Icon className={`h-3.5 w-3.5 shrink-0 ${tone === "blue" ? "text-[#60A5FA]" : "text-leaf"}`} />
+        <span className="truncate text-[10px] font-semibold uppercase tracking-[0.12em] text-[#B7C8C0]">{label}</span>
+      </div>
+      <p className="mt-1 truncate text-xs font-bold text-white sm:text-sm">{value}</p>
     </div>
   );
 }

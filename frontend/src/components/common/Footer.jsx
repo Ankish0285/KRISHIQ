@@ -6,10 +6,10 @@ const cols = [
   {
     title: "Platform",
     links: [
-      { to: "/login", label: "Marketplace" },
-      { to: "/login", label: "AI Recommendations" },
-      { to: "/login", label: "Demand Forecast" },
-      { to: "/login", label: "Smart Logistics" },
+      { to: "/marketplace", label: "Marketplace" },
+      { to: "/#how-it-works", label: "How It Works", hash: true },
+      { to: "/#about", label: "About", hash: true },
+      { to: "/cart", label: "Cart" },
     ],
   },
   {
@@ -17,7 +17,7 @@ const cols = [
     links: [
       { to: "/#about", label: "About", hash: true },
       { to: "/#how-it-works", label: "How It Works", hash: true },
-      { to: "/#features", label: "Features", hash: true },
+      { to: "/#farmers", label: "For Farmers", hash: true },
       { to: "mailto:hello@krishiq.in", label: "Contact", external: true },
     ],
   },
@@ -78,7 +78,7 @@ export default function Footer() {
         ))}
       </div>
       <div className="border-t border-white/10 py-4 text-center text-[13px] text-[#94A3B8]">
-        © {new Date().getFullYear()} KRISHIQ. Built for SIH 2026. All rights reserved.
+        © {new Date().getFullYear()} KRISHIQ. Connecting farms with markets.
       </div>
     </footer>
   );

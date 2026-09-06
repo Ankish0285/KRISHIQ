@@ -33,6 +33,11 @@ import AdminProducts from "../pages/admin/Products.jsx";
 import AdminOrders from "../pages/admin/Orders.jsx";
 import AdminLogistics from "../pages/admin/Logistics.jsx";
 import AdminAnalytics from "../pages/admin/Analytics.jsx";
+import PublicMarketplace from "../pages/Marketplace.jsx";
+import Cart from "../pages/Cart.jsx";
+import Checkout from "../pages/Checkout.jsx";
+import Payment from "../pages/Payment.jsx";
+import OrderConfirmation from "../pages/OrderConfirmation.jsx";
 
 export default function AppRoutes() {
   return (
@@ -40,6 +45,12 @@ export default function AppRoutes() {
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/marketplace" element={<PublicMarketplace />} />
+      <Route path="/product/:id" element={<ProductDetails />} />
+      <Route path="/cart" element={<Cart />} />
+      <Route path="/checkout" element={<Checkout />} />
+      <Route path="/payment" element={<Payment />} />
+      <Route path="/order-confirmation" element={<OrderConfirmation />} />
 
       <Route element={<ProtectedRoute roles={["farmer"]} />}>
         <Route element={<FarmerLayout />}>

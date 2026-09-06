@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { productApi } from "../../api/productApi.js";
-import { orderApi } from "../../api/orderApi.js";
 import useFetch from "../../hooks/useFetch.js";
 import MatchScore from "../../components/common/MatchScore.jsx";
 import { Button, Card, Input, Loader, PageHeader } from "../../components/common/ui.jsx";
@@ -29,20 +28,9 @@ export default function ProductDetails() {
 
   const request = async (e) => {
     e.preventDefault();
-    const order = await orderApi.create({
-      crop: data.cropName,
-      buyer: "FreshMart Pvt Ltd",
-      farmer: data.farmer,
-      qty: Number(form.quantity),
-      price: data.price,
-      value: Number(form.quantity) * data.price,
-      location: `${data.location} → ${form.deliveryLocation}`,
-      deliveryLocation: form.deliveryLocation,
-      preferredDate: form.preferredDate,
-    });
     addItem(data, Number(form.quantity));
-    toast(`Order ${order.id} requested.`);
-    navigate(`/buyer/track-order/${order.id}`);
+    toast(`${data.cropName} added to your cart.`);
+    navigate("/cart");
   };
 
   return (
@@ -64,7 +52,8 @@ export default function ProductDetails() {
             <Input id="qty" label="Quantity (kg)" type="number" value={form.quantity} onChange={(e) => setForm({ ...form, quantity: e.target.value })} />
             <Input id="loc" label="Delivery location" value={form.deliveryLocation} onChange={(e) => setForm({ ...form, deliveryLocation: e.target.value })} />
             <Input id="date" label="Preferred delivery date" type="date" value={form.preferredDate} onChange={(e) => setForm({ ...form, preferredDate: e.target.value })} />
-            <Button type="submit" className="w-full">Request Order</Button>
+            <Button type="submit" className="w-full">Buy Now</Button>
+            <Button type="button" variant="secondary" className="w-full" onClick={() => toast("Seller contact will be available after sign-in.")}>Contact Seller</Button>
           </form>
         </Card>
       </div>
