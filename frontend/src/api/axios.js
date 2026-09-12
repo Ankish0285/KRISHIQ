@@ -6,14 +6,9 @@ const client = axios.create({
 });
 
 client.interceptors.request.use((config) => {
-  const raw = localStorage.getItem("krishiq_user");
-  if (raw) {
-    try {
-      const user = JSON.parse(raw);
-      config.headers.Authorization = `Bearer demo-${user.id}`;
-    } catch {
-      /* ignore */
-    }
+  const token = localStorage.getItem("krishiq_token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });

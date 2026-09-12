@@ -1,25 +1,30 @@
-import { PRODUCTS, SUPPLIER_RECS, delay } from "../utils/mockData.js";
-import { readJSON, writeJSON, STORAGE_KEYS } from "../utils/storage.js";
-
-function products() {
-  const stored = readJSON(STORAGE_KEYS.products, null);
-  if (stored) return stored;
-  writeJSON(STORAGE_KEYS.products, PRODUCTS);
-  return PRODUCTS;
-}
+import { productApi } from "./productApi.js";
 
 export const buyerApi = {
   async dashboard() {
-    await delay();
+    const list = await productApi.list();
+    const matchScore = list.length
+      ? Math.round(list.reduce((sum, item) => sum + (item.match || 0), 0) / list.length)
+      : 0;
+
     return {
-      stats: { activeOrders: 5, purchases: 214000, savedSuppliers: 12, matchScore: 91 },
-      recommended: products().slice(0, 4),
-      supplier: SUPPLIER_RECS[0],
+      stats: {
+        activeOrders: 5,
+        purchases: 214000,
+        savedSuppliers: 12,
+        matchScore,
+      },
+      recommended: list.slice(0, 4),
+      supplier: {
+        name: "Jaipur Fresh FPO",
+        location: "Jaipur",
+        match: matchScore || 90,
+      },
     };
   },
   async marketplace(filters = {}) {
-    await delay();
-    let list = products();
+    let list = await productApi.list();
+
     if (filters.q) {
       const q = filters.q.toLowerCase();
       list = list.filter(
@@ -30,12 +35,14 @@ export const buyerApi = {
           p.location.toLowerCase().includes(q)
       );
     }
+
     if (filters.crop && filters.crop !== "All") list = list.filter((p) => p.cropName === filters.crop);
     if (filters.category && filters.category !== "All") list = list.filter((p) => p.category === filters.category);
     if (filters.location && filters.location !== "All") list = list.filter((p) => p.location === filters.location);
     if (filters.quality && filters.quality !== "All") list = list.filter((p) => p.quality === filters.quality);
     if (filters.maxPrice) list = list.filter((p) => p.price <= Number(filters.maxPrice));
     if (filters.minQty) list = list.filter((p) => p.quantity >= Number(filters.minQty));
+
     return list;
   },
 };

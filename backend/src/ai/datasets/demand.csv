@@ -1,0 +1,4 @@
+category,location,quantity,demand_score,date
+Fruit,Delhi,120,72,2026-09-01
+Vegetable,Jaipur,84,66,2026-09-01
+Cereal,Patna,98,78,2026-09-01

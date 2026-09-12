@@ -1,88 +1,112 @@
-import { PRODUCTS, delay, CROP_IMAGES } from "../utils/mockData.js";
-import { readJSON, writeJSON, STORAGE_KEYS } from "../utils/storage.js";
+import { CROP_IMAGES } from "../utils/mockData.js";
+import client from "./axios.js";
 
-function seedProduce() {
-  const stored = readJSON(STORAGE_KEYS.produce, null);
-  if (stored) return stored;
-  const farmerLots = PRODUCTS.filter((p) => p.farmer === "Ramesh Singh").map((p) => ({
-    ...p,
-    image: CROP_IMAGES[p.cropName],
-  }));
-  writeJSON(STORAGE_KEYS.produce, farmerLots);
-  return farmerLots;
-}
+const normalizeProduct = (item = {}) => ({
+  ...item,
+  id: item.id || item._id,
+  _id: item._id || item.id,
+  cropName: item.cropName || item.name,
+  quantity: Number(item.quantity ?? item.availableQuantity ?? 0),
+  unit: item.unit || "kg",
+  price: Number(item.price ?? 0),
+  location: item.location || "Jaipur",
+  quality: item.quality || (item.organic ? "Organic" : "A Grade"),
+  image: item.image || item.images?.[0] || CROP_IMAGES[item.name] || CROP_IMAGES.Tomato,
+  status: item.status || "Listed",
+  harvestDate: item.harvestDate ? new Date(item.harvestDate).toISOString().slice(0, 10) : "",
+  demandScore: Number(item.demandScore ?? item.rating ?? 80),
+  match: Number(item.match ?? 80),
+  description: item.description || "",
+});
 
 export const farmerApi = {
   async dashboard() {
-    await delay();
-    const produce = seedProduce();
+    const [profileRes, inventoryRes, ordersRes, earningsRes, demandRes] = await Promise.all([
+      client.get("/farmers/profile"),
+      client.get("/farmers/inventory"),
+      client.get("/farmers/orders"),
+      client.get("/farmers/earnings"),
+      client.get("/farmers/demand"),
+    ]);
+
+    const profile = profileRes.data?.data || {};
+    const produce = (inventoryRes.data?.data || []).map(normalizeProduct);
+    const orders = ordersRes.data?.data || [];
+    const earnings = earningsRes.data?.data || {};
+    const demand = demandRes.data?.data || [];
+    const averageDemand = demand.length
+      ? Math.round(demand.reduce((sum, item) => sum + Number(item.demandScore || 0), 0) / demand.length)
+      : 82;
+
     return {
+      profile,
       stats: {
-        totalProduce: produce.reduce((s, p) => s + p.quantity, 0),
-        activeOrders: 4,
-        earnings: 186400,
-        aiDemandScore: 86,
+        totalProduce: produce.reduce((sum, p) => sum + Number(p.quantity || 0), 0),
+        activeOrders: orders.filter((order) => !["delivered", "cancelled", "returned"].includes(order.orderStatus)).length,
+        earnings: Number(earnings.earnings || 0),
+        aiDemandScore: averageDemand,
       },
       produce,
       insight: {
-        crop: "Tomato",
-        current: 78,
-        forecast: 92,
-        change: 18,
-        action: "Increase listing by 200 kg and hold price near ₹28/kg.",
-        text: "Tomato demand expected to rise 18% next week.",
+        crop: demand[0]?.category || "Tomato",
+        current: averageDemand,
+        forecast: Math.min(100, averageDemand + 8),
+        change: demand.length > 1 ? Math.max(0, demand[0].demandScore - demand[1].demandScore) : 8,
+        action: "Review market demand and adjust pricing or quantities before the next market window.",
+        text: demand.length
+          ? `Current demand signal is ${averageDemand} for your main crops.`
+          : "Demand insights are being refreshed for your farm profile.",
       },
     };
   },
+
   async listProduce() {
-    await delay();
-    return seedProduce();
+    const { data } = await client.get("/farmers/inventory");
+    return (data?.data || []).map(normalizeProduct);
   },
+
   async addProduce(payload) {
-    await delay();
-    const list = seedProduce();
-    const item = {
-      id: `p-${Date.now()}`,
-      cropName: payload.cropName,
+    const { data } = await client.post("/products", {
+      name: payload.cropName,
       category: payload.category,
-      quantity: Number(payload.quantity),
-      unit: payload.unit,
-      harvestDate: payload.harvestDate,
-      price: Number(payload.minPrice),
-      quality: payload.quality,
+      description: payload.description || `${payload.cropName} listing from KRISHIQ farmer profile.`,
+      price: Number(payload.minPrice || payload.price || 0),
+      unit: payload.unit || "kg",
+      quantity: Number(payload.quantity || 0),
+      minimumOrderQuantity: 1,
       location: payload.location,
-      description: payload.description,
-      farmer: "Ramesh Singh",
-      fpo: "Jaipur Fresh FPO",
-      demandScore: 80,
-      match: 82,
-      delivery: "36 hrs",
-      status: "Listed",
-      image: payload.image || CROP_IMAGES[payload.cropName] || CROP_IMAGES.Tomato,
-    };
-    const next = [item, ...list];
-    writeJSON(STORAGE_KEYS.produce, next);
-    return item;
+      organic: payload.quality === "Organic",
+      harvestDate: payload.harvestDate,
+      images: payload.image ? [payload.image] : [],
+    });
+    return normalizeProduct(data?.data || data);
   },
+
   async updateProduce(id, payload) {
-    await delay();
-    const list = seedProduce().map((p) => (p.id === id ? { ...p, ...payload } : p));
-    writeJSON(STORAGE_KEYS.produce, list);
-    return list.find((p) => p.id === id);
+    const { data } = await client.put(`/products/${id}`, {
+      name: payload.cropName,
+      quantity: Number(payload.quantity ?? 0),
+      price: Number(payload.price ?? payload.minPrice ?? 0),
+      description: payload.description,
+      location: payload.location,
+    });
+    return normalizeProduct(data?.data || data);
   },
+
   async deleteProduce(id) {
-    await delay();
-    const list = seedProduce().filter((p) => p.id !== id);
-    writeJSON(STORAGE_KEYS.produce, list);
+    await client.delete(`/products/${id}`);
     return { ok: true };
   },
+
   async earnings() {
-    await delay();
+    const { data } = await client.get("/farmers/earnings");
+    const payload = data?.data || {};
+
     return {
-      total: 186400,
-      month: 54000,
-      pending: 22400,
-      completed: 12,
+      total: Number(payload.earnings || 0),
+      month: Number(payload.month || payload.earnings || 0),
+      pending: Number(payload.pending || 0),
+      completed: Number(payload.orders || 0),
     };
   },
 };

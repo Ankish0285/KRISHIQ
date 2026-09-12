@@ -1,51 +1,45 @@
-import { PRODUCTS, delay, CROP_IMAGES } from "../utils/mockData.js";
-import { readJSON, writeJSON, STORAGE_KEYS } from "../utils/storage.js";
+import { CROP_IMAGES } from "../utils/mockData.js";
+import client from "./axios.js";
 
-function products() {
-  const stored = readJSON(STORAGE_KEYS.products, null);
-  if (stored) return stored;
-  writeJSON(STORAGE_KEYS.products, PRODUCTS);
-  return PRODUCTS;
-}
+const normalizeProduct = (item = {}) => ({
+  ...item,
+  id: item.id || item._id,
+  _id: item._id || item.id,
+  cropName: item.cropName || item.name,
+  image: item.image || item.images?.[0] || CROP_IMAGES[item.name] || CROP_IMAGES.Tomato,
+  quantity: item.quantity ?? item.availableQuantity ?? 0,
+  unit: item.unit || "kg",
+  price: Number(item.price ?? 0),
+  location: item.location || "Rajasthan",
+  farmer: item.farmer?.farmName || item.farmer?.name || item.farmer || "KRISHIQ Farmer",
+  fpo: item.fpo?.organizationName || item.fpo?.name || item.fpo || "KRISHIQ Pool",
+  quality: item.quality || (item.organic ? "Organic" : "Fresh"),
+  delivery: item.delivery || "36 hrs",
+  match: item.match ?? 82,
+  status: item.status || "Listed",
+});
 
 export const productApi = {
   async list() {
-    await delay();
-    return products();
+    const { data } = await client.get("/products");
+    const items = Array.isArray(data?.data) ? data.data : [];
+    return items.map(normalizeProduct);
   },
   async get(id) {
-    await delay();
-    return products().find((p) => p.id === id) || null;
+    const { data } = await client.get(`/products/${id}`);
+    const item = data?.data || null;
+    return item ? normalizeProduct(item) : null;
   },
   async create(payload) {
-    await delay();
-    const item = {
-      id: `p-${Date.now()}`,
-      image: CROP_IMAGES[payload.cropName] || CROP_IMAGES.Tomato,
-      demandScore: 70,
-      match: 75,
-      delivery: "48 hrs",
-      status: "Listed",
-      farmer: payload.farmer || "Platform Lot",
-      fpo: payload.fpo || "KRISHIQ Pool",
-      ...payload,
-    };
-    const next = [item, ...products()];
-    writeJSON(STORAGE_KEYS.products, next);
-    return item;
+    const { data } = await client.post("/products", payload);
+    return normalizeProduct(data?.data || data);
   },
   async update(id, payload) {
-    await delay();
-    const next = products().map((p) => (p.id === id ? { ...p, ...payload } : p));
-    writeJSON(STORAGE_KEYS.products, next);
-    return next.find((p) => p.id === id);
+    const { data } = await client.put(`/products/${id}`, payload);
+    return normalizeProduct(data?.data || data);
   },
   async remove(id) {
-    await delay();
-    writeJSON(
-      STORAGE_KEYS.products,
-      products().filter((p) => p.id !== id)
-    );
+    await client.delete(`/products/${id}`);
     return { ok: true };
   },
 };

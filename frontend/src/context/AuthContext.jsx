@@ -15,17 +15,25 @@ export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(() => readJSON(STORAGE_KEYS.user, null));
   const [loading, setLoading] = useState(false);
 
-  const persist = (user) => {
+  const persist = (user, token = null) => {
     setCurrentUser(user);
-    if (user) writeJSON(STORAGE_KEYS.user, user);
-    else localStorage.removeItem(STORAGE_KEYS.user);
+
+    if (user) {
+      writeJSON(STORAGE_KEYS.user, user);
+      if (token) {
+        localStorage.setItem("krishiq_token", token);
+      }
+    } else {
+      localStorage.removeItem(STORAGE_KEYS.user);
+      localStorage.removeItem("krishiq_token");
+    }
   };
 
   const login = async (credentials) => {
     setLoading(true);
     try {
-      const { user } = await authApi.login(credentials);
-      persist(user);
+      const { user, token } = await authApi.login(credentials);
+      persist(user, token);
       return user;
     } finally {
       setLoading(false);
@@ -35,15 +43,15 @@ export function AuthProvider({ children }) {
   const register = async (payload) => {
     setLoading(true);
     try {
-      const { user } = await authApi.register(payload);
-      persist(user);
+      const { user, token } = await authApi.register(payload);
+      persist(user, token);
       return user;
     } finally {
       setLoading(false);
     }
   };
 
-  const logout = () => persist(null);
+  const logout = () => persist(null, null);
 
   const value = useMemo(
     () => ({

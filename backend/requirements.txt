@@ -1,0 +1,4 @@
+# Optional Python-based AI helpers
+numpy
+pandas
+scikit-learn
