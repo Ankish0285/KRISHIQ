@@ -1,4 +1,4 @@
-import { forwardRef } from "react";
+import { forwardRef, useState } from "react";
 import { clsx } from "./cn.js";
 
 export function Button({
@@ -127,21 +127,70 @@ export function SearchBar({ value, onChange, placeholder = "Search...", classNam
   );
 }
 
-export function Avatar({ name = "User", src, size = "md" }) {
+export function resolveUserAvatarSrc({ user, src }) {
+  const raw =
+    src ??
+    user?.profileImage ??
+    user?.image ??
+    user?.avatar ??
+    user?.picture ??
+    (Array.isArray(user?.images) ? user.images[0] : undefined);
+  if (!raw) return raw;
+  try {
+    const cacheKey =
+      user?.updatedAt ?? user?.__v ?? user?.version ?? user?.profileUpdatedAt ?? Date.now().toString().slice(0, 7);
+    const sep = raw.includes("?") ? "&" : "?";
+    return `${raw}${sep}v=${encodeURIComponent(String(cacheKey))}`;
+  } catch {
+    return raw;
+  }
+}
+
+export function Avatar({ name = "User", user, src, size = "md" }) {
   const sizes = { sm: "h-8 w-8 text-xs", md: "h-10 w-10 text-sm", lg: "h-12 w-12 text-base" };
-  const initials = name
+  const displayName = (user?.name ?? name ?? "User").toString();
+  const initials = displayName
     .split(" ")
     .slice(0, 2)
+    .filter(Boolean)
     .map((n) => n[0])
     .join("")
-    .toUpperCase();
-  if (src) {
-    return <img src={src} alt={name} className={clsx(sizes[size], "rounded-full object-cover")} />;
+    .toUpperCase() || "U";
+  const resolvedSrc = resolveUserAvatarSrc({ user, src });
+  if (resolvedSrc) {
+    return (
+      <FallbackImage
+        src={resolvedSrc}
+        alt={displayName}
+        sizeClass={sizes[size]}
+        fallback={
+          <div className={clsx(sizes[size], "grid place-items-center rounded-full bg-light-green font-bold text-deep")}>
+            {initials}
+          </div>
+        }
+      />
+    );
   }
   return (
     <div className={clsx(sizes[size], "grid place-items-center rounded-full bg-light-green font-bold text-deep")}>
       {initials}
     </div>
+  );
+}
+
+function FallbackImage({ src, alt, sizeClass, fallback }) {
+  const [failed, setFailed] = useState(false);
+  if (failed) return fallback ?? null;
+  return (
+    <img
+      key={src}
+      src={src}
+      alt={alt}
+      referrerPolicy="no-referrer"
+      crossOrigin="anonymous"
+      className={clsx(sizeClass, "rounded-full object-cover")}
+      onError={() => setFailed(true)}
+    />
   );
 }
 

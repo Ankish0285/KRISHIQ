@@ -36,7 +36,7 @@ export default function Sidebar({ items, user, onLogout, onNavigate }) {
       </nav>
       <div className="border-t border-slate-100 p-4 dark:border-slate-800">
         <div className="mb-3 flex items-center gap-3">
-          <Avatar name={user?.name} />
+          <Avatar user={user} />
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold">{user?.name}</p>
             <p className="truncate text-xs text-slate-500">{user?.email}</p>

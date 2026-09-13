@@ -110,7 +110,7 @@ function Topbar({ user, query, setQuery, notes, setNotes, onMenu, showMenu }) {
         <Bell className="h-5 w-5" />
         <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-ai-blue" />
       </button>
-      <Avatar name={user?.name} size="sm" />
+      <Avatar user={user} size="sm" />
       {notes && (
         <div className="absolute right-4 top-16 w-80 rounded-2xl border border-slate-200 bg-white p-3 shadow-card dark:border-slate-700 dark:bg-slate-900">
           {NOTIFICATIONS.map((n) => (

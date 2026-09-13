@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { authApi } from "../api/authApi.js";
 import { STORAGE_KEYS, readJSON, writeJSON } from "../utils/storage.js";
 
@@ -17,6 +17,7 @@ export const ROLE_HOME = {
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(() => readJSON(STORAGE_KEYS.user, null));
   const [loading, setLoading] = useState(false);
+  const [hydrating, setHydrating] = useState(() => Boolean(localStorage.getItem("krishiq_token")));
 
   const persist = (user, token = null) => {
     setCurrentUser(user);
@@ -31,6 +32,29 @@ export function AuthProvider({ children }) {
       localStorage.removeItem("krishiq_token");
     }
   };
+
+  useEffect(() => {
+    let cancelled = false;
+    const token = localStorage.getItem("krishiq_token");
+    if (!token) {
+      setHydrating(false);
+      return;
+    }
+    authApi
+      .me()
+      .then((fresh) => {
+        if (cancelled || !fresh) return;
+        setCurrentUser(fresh);
+        writeJSON(STORAGE_KEYS.user, fresh);
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setHydrating(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const login = async (credentials) => {
     setLoading(true);
