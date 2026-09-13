@@ -3,7 +3,7 @@ import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import BrandLogo from "./BrandLogo.jsx";
 import ThemeToggle from "./ThemeToggle.jsx";
-import { Button } from "./ui.jsx";
+import { Avatar, Button } from "./ui.jsx";
 import { useAuth } from "../../hooks/useAuth.js";
 import { useTheme } from "../../context/ThemeContext.jsx";
 import { clsx } from "./cn.js";
@@ -88,7 +88,17 @@ export default function Navbar({ settings = {} }) {
         <div className="hidden items-center gap-2 lg:flex">
           <ThemeToggle showLabel />
           {currentUser ? (
-            <Button onClick={() => navigate(homeFor(currentUser.role))}>Go to dashboard</Button>
+            <button
+              type="button"
+              onClick={() => navigate(homeFor(currentUser.role))}
+              className="group flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 py-1 pl-1 pr-3 shadow-sm transition hover:border-primary-green/40 hover:shadow-md dark:border-white/10 dark:bg-white/5"
+              title="Go to dashboard"
+            >
+              <Avatar user={currentUser} size="sm" />
+              <span className="text-sm font-semibold text-slate-700 group-hover:text-primary-green dark:text-slate-200 dark:group-hover:text-leaf">
+                {currentUser.name?.split(" ")[0] || currentUser.email?.split("@")[0] || "Dashboard"}
+              </span>
+            </button>
           ) : (
             <>
               <Button variant={loginVariant} onClick={() => setAuthTab("login")}>Login</Button>
