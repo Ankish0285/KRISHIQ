@@ -1,8 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute.jsx";
 import Home from "../pages/Home.jsx";
-import Login from "../pages/Login.jsx";
-import Register from "../pages/Register.jsx";
+import AuthEntry from "../pages/AuthEntry.jsx";
 import NotFound from "../pages/NotFound.jsx";
 import FarmerLayout from "../layouts/FarmerLayout.jsx";
 import BuyerLayout from "../layouts/BuyerLayout.jsx";
@@ -33,18 +32,22 @@ import AdminProducts from "../pages/admin/Products.jsx";
 import AdminOrders from "../pages/admin/Orders.jsx";
 import AdminLogistics from "../pages/admin/Logistics.jsx";
 import AdminAnalytics from "../pages/admin/Analytics.jsx";
+import AdminUsers from "../pages/admin/Users.jsx";
+import AdminTools from "../pages/admin/AdminTools.jsx";
+import SuperAdminWorkspace from "../pages/admin/SuperAdminWorkspace.jsx";
 import PublicMarketplace from "../pages/Marketplace.jsx";
 import Cart from "../pages/Cart.jsx";
 import Checkout from "../pages/Checkout.jsx";
 import Payment from "../pages/Payment.jsx";
 import OrderConfirmation from "../pages/OrderConfirmation.jsx";
+import Profile from "../pages/Profile.jsx";
 
 export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
+      <Route path="/login" element={<AuthEntry />} />
+      <Route path="/register" element={<AuthEntry />} />
       <Route path="/marketplace" element={<PublicMarketplace />} />
       <Route path="/product/:id" element={<ProductDetails />} />
       <Route path="/cart" element={<Cart />} />
@@ -60,7 +63,7 @@ export default function AppRoutes() {
           <Route path="/farmer/orders" element={<FarmerOrders />} />
           <Route path="/farmer/earnings" element={<Earnings />} />
           <Route path="/farmer/demand-forecast" element={<DemandForecast />} />
-          <Route path="/farmer/profile" element={<FarmerProfile />} />
+          <Route path="/farmer/profile" element={<Profile />} />
         </Route>
       </Route>
 
@@ -73,7 +76,7 @@ export default function AppRoutes() {
           <Route path="/buyer/orders" element={<BuyerOrders />} />
           <Route path="/buyer/track-order" element={<TrackOrder />} />
           <Route path="/buyer/track-order/:id" element={<TrackOrder />} />
-          <Route path="/buyer/profile" element={<BuyerProfile />} />
+          <Route path="/buyer/profile" element={<Profile />} />
         </Route>
       </Route>
 
@@ -83,18 +86,26 @@ export default function AppRoutes() {
           <Route path="/fpo/farmers" element={<FpoFarmers />} />
           <Route path="/fpo/inventory" element={<FpoInventory />} />
           <Route path="/fpo/bulk-orders" element={<BulkOrders />} />
+          <Route path="/fpo/profile" element={<Profile />} />
         </Route>
       </Route>
 
       <Route element={<ProtectedRoute roles={["admin"]} />}>
         <Route element={<AdminLayout />}>
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/super-admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/users" element={<AdminUsers />} />
           <Route path="/admin/farmers" element={<AdminFarmers />} />
           <Route path="/admin/buyers" element={<AdminBuyers />} />
           <Route path="/admin/products" element={<AdminProducts />} />
           <Route path="/admin/orders" element={<AdminOrders />} />
           <Route path="/admin/logistics" element={<AdminLogistics />} />
           <Route path="/admin/analytics" element={<AdminAnalytics />} />
+          <Route path="/admin/content" element={<SuperAdminWorkspace />} />
+          <Route path="/admin/notifications" element={<AdminTools />} />
+          <Route path="/admin/settings" element={<SuperAdminWorkspace />} />
+          <Route path="/admin/audit-logs" element={<SuperAdminWorkspace />} />
+          <Route path="/admin/profile" element={<Profile />} />
         </Route>
       </Route>
 

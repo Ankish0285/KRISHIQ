@@ -125,7 +125,7 @@ export const getOrderById = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Order not found.' });
     }
 
-    if (req.user.role !== 'admin' && order.buyer.toString() !== req.user._id.toString()) {
+    if (!['admin', 'super_admin'].includes(req.user.role) && order.buyer.toString() !== req.user._id.toString()) {
       return res.status(403).json({ success: false, message: 'You are not authorized to view this order.' });
     }
 
@@ -144,7 +144,7 @@ export const updateOrderStatus = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Order not found.' });
     }
 
-    if (req.user.role !== 'admin') {
+    if (!['admin', 'super_admin'].includes(req.user.role)) {
       if (req.user.role !== 'farmer' && req.user.role !== 'fpo' && req.user.role !== 'logistics') {
         return res.status(403).json({ success: false, message: 'You are not authorized to update order status.' });
       }
@@ -181,7 +181,7 @@ export const cancelOrder = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Order not found.' });
     }
 
-    if (order.buyer.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+    if (order.buyer.toString() !== req.user._id.toString() && !['admin', 'super_admin'].includes(req.user.role)) {
       return res.status(403).json({ success: false, message: 'You cannot cancel someone else\'s order.' });
     }
 

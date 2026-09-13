@@ -41,23 +41,22 @@ const cols = [
   },
 ];
 
-export default function Footer() {
+export default function Footer({ settings = {} }) {
   return (
     <footer className="border-t border-white/10 bg-night text-[#F8FAFC]">
       <div className="page-wrap grid gap-10 py-14 md:grid-cols-2 lg:grid-cols-6">
         <div className="lg:col-span-2">
           <div className="flex items-center gap-3">
-            <BrandLogo className="h-14 w-14" />
+            <BrandLogo src={settings.footerLogo || settings.logoUrl} className="h-14 w-14" />
             <div>
-              <p className="text-xl font-extrabold">KRISH<span className="text-ai-blue">IQ</span></p>
-              <p className="mt-1 text-[14px] text-[#94A3B8]">Smart Farming. Direct Markets. Better Future.</p>
+              <p className="text-xl font-extrabold">{settings.brandName || "KRISHIQ"}</p>
+              <p className="mt-1 text-[14px] text-[#94A3B8]">{settings.footerText || "Smart Farming. Direct Markets. Better Future."}</p>
             </div>
           </div>
           <div className="mt-5 flex gap-3 text-[#94A3B8]">
-            <a href="https://twitter.com" aria-label="Twitter" className="hover:text-leaf"><Twitter className="h-4 w-4" /></a>
-            <a href="https://linkedin.com" aria-label="LinkedIn" className="hover:text-leaf"><Linkedin className="h-4 w-4" /></a>
-            <a href="https://instagram.com" aria-label="Instagram" className="hover:text-leaf"><Instagram className="h-4 w-4" /></a>
-            <a href="https://facebook.com" aria-label="Facebook" className="hover:text-leaf"><Facebook className="h-4 w-4" /></a>
+            {settings.linkedinUrl && <a href={settings.linkedinUrl} aria-label="LinkedIn" className="hover:text-leaf"><Linkedin className="h-4 w-4" /></a>}
+            {settings.instagramUrl && <a href={settings.instagramUrl} aria-label="Instagram" className="hover:text-leaf"><Instagram className="h-4 w-4" /></a>}
+            {settings.facebookUrl && <a href={settings.facebookUrl} aria-label="Facebook" className="hover:text-leaf"><Facebook className="h-4 w-4" /></a>}
           </div>
         </div>
         {cols.map((col) => (
@@ -78,7 +77,7 @@ export default function Footer() {
         ))}
       </div>
       <div className="border-t border-white/10 py-4 text-center text-[13px] text-[#94A3B8]">
-        © {new Date().getFullYear()} KRISHIQ. Connecting farms with markets.
+        © {new Date().getFullYear()} {settings.brandName || "KRISHIQ"}. {settings.copyright || "Connecting farms with markets."}
       </div>
     </footer>
   );

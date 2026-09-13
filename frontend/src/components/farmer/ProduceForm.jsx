@@ -47,7 +47,11 @@ export default function ProduceForm({ values, errors, onChange, onSubmit, submit
           onChange={set("description")}
         />
       </label>
-      <Input id="image" label="Crop Image URL" className="md:col-span-2" value={values.image} onChange={set("image")} placeholder="Optional image URL" />
+      <label className="block space-y-1.5 md:col-span-2" htmlFor="image">
+        <span className="text-sm font-medium">Crop Image URL</span>
+        <input id="image" className="h-11 w-full rounded-xl border border-slate-200 px-3 text-sm dark:border-slate-700 dark:bg-slate-900" type="url" value={values.image} onChange={set("image")} placeholder="Optional image URL" />
+        <span className="flex flex-wrap items-center gap-3 pt-1 text-xs text-slate-500"><span>or upload an image</span><input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => onChange({ ...values, imageFile: e.target.files?.[0] })} /></span>
+      </label>
       <div className="md:col-span-2">
         <Button type="submit">{submitLabel}</Button>
       </div>

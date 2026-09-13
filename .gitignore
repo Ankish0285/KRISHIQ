@@ -3,6 +3,7 @@ dist/
 .env
 .env.*
 !.env.example
+dont touch/
 __pycache__/
 *.py[cod]
 .DS_Store

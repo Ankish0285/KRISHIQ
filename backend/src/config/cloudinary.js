@@ -12,8 +12,15 @@ if (cloudinaryConfig.cloudName && cloudinaryConfig.apiKey && cloudinaryConfig.ap
 }
 
 export const uploadToCloudinary = async (fileBuffer, folder = 'krishiq') => {
-  if (!cloudinaryConfig.cloudName || !cloudinaryConfig.apiKey || !cloudinaryConfig.apiSecret) {
-    throw new Error('Cloudinary is not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET.');
+  const result = await uploadResultToCloudinary(fileBuffer, folder);
+  return result.secure_url;
+};
+
+export const uploadResultToCloudinary = async (fileBuffer, folder = 'krishiq') => {
+  const cloudName = String(cloudinaryConfig.cloudName || '').trim();
+  const isPlaceholder = !cloudName || ['krishiq', 'your-cloud-name', 'your_cloud_name'].includes(cloudName.toLowerCase());
+  if (isPlaceholder || !cloudinaryConfig.apiKey || !cloudinaryConfig.apiSecret) {
+    throw new Error('Cloudinary is not configured. Set CLOUDINARY_CLOUD_NAME to the Cloudinary dashboard cloud name, along with CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET.');
   }
 
   const result = await new Promise((resolve, reject) => {
@@ -31,7 +38,7 @@ export const uploadToCloudinary = async (fileBuffer, folder = 'krishiq') => {
     stream.end(fileBuffer);
   });
 
-  return result.secure_url;
+  return result;
 };
 
 export default cloudinary;

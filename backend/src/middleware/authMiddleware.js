@@ -31,10 +31,26 @@ export const authorizeRoles = (...roles) => {
       return res.status(401).json({ success: false, message: 'Authentication required.' });
     }
 
-    if (!roles.includes(req.user.role)) {
+    const hasRole = roles.includes(req.user.role) || (req.user.role === 'super_admin' && roles.includes('admin'));
+    if (!hasRole) {
       return res.status(403).json({ success: false, message: 'You are not authorized to access this resource.' });
     }
 
     next();
   };
+};
+
+export const requireSuperAdmin = (req, res, next) => {
+  if (!req.user) return res.status(401).json({ success: false, message: 'Authentication required.' });
+  if (req.user.role !== 'super_admin') return res.status(403).json({ success: false, message: 'Super admin access required.' });
+  next();
+};
+
+export const requireAdminPermission = (permission) => (req, res, next) => {
+  if (!req.user) return res.status(401).json({ success: false, message: 'Authentication required.' });
+  if (req.user.role === 'super_admin') return next();
+  if (req.user.role !== 'admin' || !req.user.permissions?.includes(permission)) {
+    return res.status(403).json({ success: false, message: 'Admin permission required.' });
+  }
+  next();
 };

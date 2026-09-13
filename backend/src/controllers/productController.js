@@ -87,7 +87,7 @@ export const getProducts = async (req, res, next) => {
       ];
     }
 
-    if (req.user && req.user.role !== 'admin' && req.user.role !== 'buyer') {
+    if (req.user && !['admin', 'super_admin', 'buyer'].includes(req.user.role)) {
       Object.assign(filters, getOwnerFilter(req));
     }
 
@@ -126,7 +126,7 @@ export const updateProduct = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Product not found.' });
     }
 
-    if (req.user.role !== 'admin') {
+    if (!['admin', 'super_admin'].includes(req.user.role)) {
       const isOwner =
         (product.farmer && product.farmer.toString() === req.user._id.toString()) ||
         (product.fpo && product.fpo.toString() === req.user._id.toString());
@@ -163,7 +163,7 @@ export const deleteProduct = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Product not found.' });
     }
 
-    if (req.user.role !== 'admin') {
+    if (!['admin', 'super_admin'].includes(req.user.role)) {
       const isOwner =
         (product.farmer && product.farmer.toString() === req.user._id.toString()) ||
         (product.fpo && product.fpo.toString() === req.user._id.toString());

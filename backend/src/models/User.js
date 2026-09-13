@@ -26,7 +26,7 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['buyer', 'farmer', 'fpo', 'logistics', 'admin'],
+      enum: ['buyer', 'farmer', 'fpo', 'logistics', 'admin', 'super_admin'],
       default: 'buyer',
       required: true,
     },
@@ -58,6 +58,30 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    permissions: {
+      type: [String],
+      default: [],
+    },
+    isFirstLogin: {
+      type: Boolean,
+      default: true,
+    },
+    loginOtpHash: {
+      type: String,
+      default: '',
+    },
+    loginOtpExpiresAt: {
+      type: Date,
+      default: null,
+    },
+    loginOtpAttempts: {
+      type: Number,
+      default: 0,
+    },
+    loginOtpLastSentAt: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,
@@ -69,6 +93,8 @@ userSchema.index({ city: 1, state: 1 });
 
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
+
+  if (/^\$2[aby]\$/.test(this.password)) return next();
 
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);

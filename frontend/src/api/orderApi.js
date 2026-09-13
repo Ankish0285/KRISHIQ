@@ -108,6 +108,10 @@ export const orderApi = {
     const { data } = await client.post(`/orders/${id}/cancel`);
     return normalizeOrder(data?.data || data);
   },
+  async submitReview(payload) {
+    const { data } = await client.post("/reviews", payload);
+    return data?.data || data;
+  },
 };
 
 export default orderApi;

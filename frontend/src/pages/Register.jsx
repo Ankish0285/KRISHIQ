@@ -55,7 +55,7 @@ export default function Register() {
           <Input id="password" label="Password" type="password" value={form.password} onChange={set("password")} error={errors.password} />
           <Input id="confirmPassword" label="Confirm Password" type="password" value={form.confirmPassword} onChange={set("confirmPassword")} error={errors.confirmPassword} />
           <Select id="role" label="Role" value={form.role} onChange={set("role")} error={errors.role}>
-            <option value="farmer">Farmer</option>
+            <option value="farmer">Farmer / Seller</option>
             <option value="buyer">Buyer</option>
             <option value="fpo">FPO</option>
           </Select>

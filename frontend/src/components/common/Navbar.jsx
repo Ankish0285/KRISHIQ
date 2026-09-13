@@ -7,6 +7,7 @@ import { Button } from "./ui.jsx";
 import { useAuth } from "../../hooks/useAuth.js";
 import { useTheme } from "../../context/ThemeContext.jsx";
 import { clsx } from "./cn.js";
+import AuthModal from "./AuthModal.jsx";
 
 const links = [
   { href: "/", label: "Home" },
@@ -14,12 +15,14 @@ const links = [
   { href: "/#how-it-works", label: "How It Works" },
   { href: "/#farmers", label: "For Farmers" },
   { href: "/#buyers", label: "For Buyers" },
+  { href: "/#reviews", label: "Reviews" },
   { href: "/#about", label: "About" },
 ];
 
-export default function Navbar() {
+export default function Navbar({ settings = {} }) {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [authTab, setAuthTab] = useState(null);
   const { currentUser, homeFor } = useAuth();
   const { isDark } = useTheme();
   const navigate = useNavigate();
@@ -56,17 +59,17 @@ export default function Navbar() {
     >
       <div className="page-wrap flex h-full items-center justify-between gap-4">
         <Link to="/" className="flex min-w-0 items-center gap-3">
-          <BrandLogo className="h-11 w-11 shrink-0" />
+          <BrandLogo src={settings.logoUrl} className="h-11 w-11 shrink-0" />
           <div className="min-w-0">
-            <p className="text-[17px] font-extrabold leading-none tracking-tight text-ink dark:text-[#F8FAFC]">
-              KRISH<span className="text-ai-blue">IQ</span>
-            </p>
-            <p className="mt-1 text-[11px] uppercase tracking-[0.18em] text-slate-500 dark:text-[#94A3B8]">AgriTech</p>
+            <p className="text-[17px] font-extrabold leading-none tracking-tight text-ink dark:text-[#F8FAFC]">{settings.brandName || "KRISHIQ"}</p>
+            <p className="mt-1 text-[11px] uppercase tracking-[0.18em] text-slate-500 dark:text-[#94A3B8]">{settings.brandLine || "AgriTech"}</p>
           </div>
         </Link>
 
         <nav className="hidden items-center gap-7 lg:flex">
-          {links.map((l) => (
+          {links.map((l) => {
+            const label = l.label === "Marketplace" ? settings.navMarketplaceLabel || l.label : l.label === "How It Works" ? settings.navHowLabel || l.label : l.label === "For Farmers" ? settings.navFarmerLabel || l.label : l.label === "For Buyers" ? settings.navBuyerLabel || l.label : l.label === "Reviews" ? settings.navReviewsLabel || l.label : l.label === "About" ? settings.navAboutLabel || l.label : l.label;
+            return (
             <a
               key={l.label}
               href={l.href}
@@ -76,9 +79,10 @@ export default function Navbar() {
                 ((location.hash === l.href.split("#")[1]) || (!location.hash && l.href === "/")) && "text-primary-green dark:text-leaf after:absolute after:inset-x-0 after:-bottom-1 after:h-0.5 after:bg-leaf after:content-['']"
               )}
             >
-              {l.label}
+              {label}
             </a>
-          ))}
+            );
+          })}
         </nav>
 
         <div className="hidden items-center gap-2 lg:flex">
@@ -87,12 +91,8 @@ export default function Navbar() {
             <Button onClick={() => navigate(homeFor(currentUser.role))}>Go to dashboard</Button>
           ) : (
             <>
-              <NavLink to="/login">
-                <Button variant={loginVariant}>Login</Button>
-              </NavLink>
-              <NavLink to="/register">
-                <Button>Get Started</Button>
-              </NavLink>
+              <Button variant={loginVariant} onClick={() => setAuthTab("login")}>Login</Button>
+              <Button onClick={() => setAuthTab("signup")}>Sign Up</Button>
             </>
           )}
         </div>
@@ -121,21 +121,21 @@ export default function Navbar() {
               </button>
             </div>
             <div className="grid gap-4 text-[16px] text-ink dark:text-[#F8FAFC]">
-              {links.map((l) => (
+              {links.map((l) => {
+                const label = l.label === "Marketplace" ? settings.navMarketplaceLabel || l.label : l.label === "How It Works" ? settings.navHowLabel || l.label : l.label === "For Farmers" ? settings.navFarmerLabel || l.label : l.label === "For Buyers" ? settings.navBuyerLabel || l.label : l.label === "Reviews" ? settings.navReviewsLabel || l.label : l.label === "About" ? settings.navAboutLabel || l.label : l.label;
+                return (
                 <a key={l.label} href={l.href} onClick={() => setOpen(false)}>
-                  {l.label}
+                  {label}
                 </a>
-              ))}
-              <NavLink to="/login" onClick={() => setOpen(false)}>
-                <Button variant={loginVariant} className="w-full">Login</Button>
-              </NavLink>
-              <NavLink to="/register" onClick={() => setOpen(false)}>
-                <Button className="w-full">Get Started</Button>
-              </NavLink>
+                    );
+                  })}
+              <Button variant={loginVariant} className="w-full" onClick={() => { setOpen(false); setAuthTab("login"); }}>Login</Button>
+              <Button className="w-full" onClick={() => { setOpen(false); setAuthTab("signup"); }}>Sign Up</Button>
             </div>
           </div>
         </div>
       )}
+      <AuthModal open={Boolean(authTab)} initialTab={authTab || "login"} onClose={() => setAuthTab(null)} />
     </header>
   );
 }

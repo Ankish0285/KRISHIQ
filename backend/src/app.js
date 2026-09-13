@@ -13,11 +13,19 @@ import fpoRoutes from './routes/fpoRoutes.js';
 import logisticsRoutes from './routes/logisticsRoutes.js';
 import aiRoutes from './routes/aiRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
+import publicRoutes from './routes/publicRoutes.js';
+import reviewRoutes from './routes/reviewRoutes.js';
 import errorMiddleware from './middleware/errorMiddleware.js';
 
 const app = express();
 
-const allowlist = [config.frontendUrl];
+const allowlist = [
+  config.frontendUrl,
+  ...(config.nodeEnv !== 'production'
+    ? ['http://localhost:5173', 'http://127.0.0.1:5173']
+    : []),
+].filter(Boolean);
 
 app.use(
   cors({
@@ -62,6 +70,9 @@ app.use('/api/fpo', fpoRoutes);
 app.use('/api/logistics', logisticsRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/payment', paymentRoutes);
+app.use('/api/public', publicRoutes);
+app.use('/api/reviews', reviewRoutes);
+app.use('/api/admin', adminRoutes);
 
 app.use((req, res) => {
   res.status(404).json({

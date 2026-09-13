@@ -66,7 +66,7 @@ export const farmerApi = {
   },
 
   async addProduce(payload) {
-    const { data } = await client.post("/products", {
+    const productPayload = {
       name: payload.cropName,
       category: payload.category,
       description: payload.description || `${payload.cropName} listing from KRISHIQ farmer profile.`,
@@ -78,7 +78,13 @@ export const farmerApi = {
       organic: payload.quality === "Organic",
       harvestDate: payload.harvestDate,
       images: payload.image ? [payload.image] : [],
-    });
+    };
+    const body = payload.imageFile ? new FormData() : productPayload;
+    if (payload.imageFile) {
+      Object.entries(productPayload).forEach(([key, value]) => body.append(key, Array.isArray(value) ? JSON.stringify(value) : value ?? ""));
+      body.append("images", payload.imageFile);
+    }
+    const { data } = await client.post("/products", body);
     return normalizeProduct(data?.data || data);
   },
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import BrandLogo from "../components/common/BrandLogo.jsx";
 import ThemeToggle from "../components/common/ThemeToggle.jsx";
@@ -6,7 +6,7 @@ import Modal from "../components/common/Modal.jsx";
 import { Button, Input } from "../components/common/ui.jsx";
 import { useAuth } from "../hooks/useAuth.js";
 import { useToast } from "../context/ToastContext.jsx";
-import { validateLogin } from "../utils/validation.js";
+import { isEmail, validateLogin } from "../utils/validation.js";
 
 const demos = [
   { label: "Farmer demo", identifier: "farmer@krishiq.in" },
@@ -16,13 +16,23 @@ const demos = [
 ];
 
 export default function Login() {
-  const { login, homeFor, loading } = useAuth();
+  const { login, sendOtp, verifyLoginOtp, homeFor, loading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [forgot, setForgot] = useState(false);
   const [remember, setRemember] = useState(true);
   const [form, setForm] = useState({ identifier: "", password: "" });
+  const [otpChallenge, setOtpChallenge] = useState(null);
+  const [otp, setOtp] = useState("");
+  const [loginMode, setLoginMode] = useState("password");
+  const [resendSeconds, setResendSeconds] = useState(0);
   const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    if (!resendSeconds) return undefined;
+    const timer = window.setInterval(() => setResendSeconds((value) => Math.max(0, value - 1)), 1000);
+    return () => window.clearInterval(timer);
+  }, [resendSeconds]);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -30,12 +40,60 @@ export default function Login() {
     setErrors(next);
     if (Object.keys(next).length) return;
     try {
-      const user = await login(form);
+      const result = await login(form);
+      if (result?.requiresOtp) {
+        setOtpChallenge(result);
+        setResendSeconds(60);
+        toast("A login OTP was sent to your email.", "info");
+        return;
+      }
+      const user = result;
       if (remember) localStorage.setItem("krishiq_remember", "1");
       toast(`Welcome back, ${user.name}`);
       navigate(homeFor(user.role));
     } catch (err) {
       toast(err.message, "info");
+    }
+  };
+
+  const sendEmailOtp = async (e) => {
+    e.preventDefault();
+    const email = form.identifier.trim().toLowerCase();
+    if (!isEmail(email)) {
+      setErrors({ identifier: "Enter a valid email address." });
+      return;
+    }
+    try {
+      await sendOtp(email);
+      setOtpChallenge({ identifier: email });
+      setOtp("");
+      setResendSeconds(60);
+      toast("If an account exists for this email, an OTP has been sent.", "info");
+    } catch (err) {
+      toast(err.response?.data?.message || err.message, "info");
+    }
+  };
+
+  const resendEmailOtp = async () => {
+    if (!otpChallenge || resendSeconds) return;
+    try {
+      await sendOtp(otpChallenge.identifier);
+      setOtp("");
+      setResendSeconds(60);
+      toast("A new OTP was sent.", "info");
+    } catch (err) {
+      toast(err.response?.data?.message || err.message, "info");
+    }
+  };
+
+  const submitOtp = async (e) => {
+    e.preventDefault();
+    try {
+      const user = await verifyLoginOtp({ identifier: otpChallenge.identifier, otp });
+      toast(`Welcome back, ${user.name}`);
+      navigate(homeFor(user.role));
+    } catch (err) {
+      toast(err.response?.data?.message || err.message, "info");
     }
   };
 
@@ -72,18 +130,35 @@ export default function Login() {
         <div className="mx-auto w-full max-w-md">
           <h2 className="text-3xl font-extrabold">Welcome back</h2>
           <p className="mt-1 text-sm text-slate-500">Login with email or mobile. Demo password is demo123.</p>
-          <form className="mt-6 space-y-4" onSubmit={submit}>
-            <Input id="identifier" label="Email / mobile" value={form.identifier} onChange={(e) => setForm({ ...form, identifier: e.target.value })} error={errors.identifier} />
-            <Input id="password" label="Password" type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} error={errors.password} />
-            <div className="flex items-center justify-between text-sm">
-              <label className="flex items-center gap-2">
-                <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
-                Remember me
-              </label>
-              <button type="button" className="text-ai-blue" onClick={() => setForgot(true)}>Forgot password</button>
-            </div>
-            <Button type="submit" className="w-full" disabled={loading}>Login</Button>
-          </form>
+          {otpChallenge ? (
+            <form className="mt-6 space-y-4" onSubmit={submitOtp}>
+              <p className="text-sm text-slate-500">Enter the 6-digit OTP sent to {otpChallenge.identifier}.</p>
+              <Input id="otp" label="One-time password" inputMode="numeric" maxLength={6} value={otp} onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))} />
+              <Button type="submit" className="w-full" disabled={loading || otp.length !== 6}>Verify OTP</Button>
+              <button type="button" className="w-full text-sm text-ai-blue" disabled={resendSeconds > 0 || loading} onClick={resendEmailOtp}>
+                {resendSeconds ? `Resend OTP in ${resendSeconds}s` : "Resend OTP"}
+              </button>
+              <button type="button" className="w-full text-sm text-ai-blue" onClick={() => { setOtpChallenge(null); setOtp(""); }}>Back to login</button>
+            </form>
+          ) : (
+            <form className="mt-6 space-y-4" onSubmit={loginMode === "emailOtp" ? sendEmailOtp : submit}>
+              <Input id="identifier" label="Email / mobile" value={form.identifier} onChange={(e) => setForm({ ...form, identifier: e.target.value })} error={errors.identifier} />
+              {loginMode === "password" && <>
+                <Input id="password" label="Password" type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} error={errors.password} />
+                <div className="flex items-center justify-between text-sm">
+                  <label className="flex items-center gap-2">
+                    <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
+                    Remember me
+                  </label>
+                  <button type="button" className="text-ai-blue" onClick={() => setForgot(true)}>Forgot password</button>
+                </div>
+              </>}
+              <Button type="submit" className="w-full" disabled={loading}>{loginMode === "emailOtp" ? "Send OTP" : "Login"}</Button>
+              <button type="button" className="w-full text-sm text-ai-blue" onClick={() => { setLoginMode(loginMode === "password" ? "emailOtp" : "password"); setErrors({}); }}>
+                {loginMode === "password" ? "Login with email OTP" : "Login with password"}
+              </button>
+            </form>
+          )}
           <div className="mt-6 grid grid-cols-2 gap-2">
             {demos.map((d) => (
               <Button key={d.identifier} variant="secondary" size="sm" onClick={() => demo(d.identifier)}>

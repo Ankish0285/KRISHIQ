@@ -4,11 +4,14 @@ import { STORAGE_KEYS, readJSON, writeJSON } from "../utils/storage.js";
 
 const AuthContext = createContext(null);
 
-const ROLE_HOME = {
+export const ROLE_HOME = {
   farmer: "/farmer/dashboard",
+  seller: "/farmer/dashboard",
   buyer: "/buyer/dashboard",
   fpo: "/fpo/dashboard",
   admin: "/admin/dashboard",
+  super_admin: "/admin/dashboard",
+  superadmin: "/admin/dashboard",
 };
 
 export function AuthProvider({ children }) {
@@ -32,7 +35,63 @@ export function AuthProvider({ children }) {
   const login = async (credentials) => {
     setLoading(true);
     try {
-      const { user, token } = await authApi.login(credentials);
+      const result = await authApi.login(credentials);
+      if (result.requiresOtp) return result;
+      const { user, token } = result;
+      persist(user, token);
+      return user;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const verifyLoginOtp = async (credentials) => {
+    setLoading(true);
+    try {
+      const { user, token } = await authApi.verifyLoginOtp(credentials);
+      persist(user, token);
+      return user;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const sendOtp = async (email) => {
+    setLoading(true);
+    try {
+      return await authApi.sendOtp(email);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const signupWithOtp = async (payload) => {
+    setLoading(true);
+    try {
+      const { user, token } = await authApi.verifySignupOtp(payload.email, payload.otp);
+      persist(user, token);
+      return user;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const sendSignupOtp = async (payload) => {
+    setLoading(true);
+    try { return await authApi.sendSignupOtp(payload); } finally { setLoading(false); }
+  };
+  const sendPasswordResetOtp = async (email) => {
+    setLoading(true);
+    try { return await authApi.sendPasswordResetOtp(email); } finally { setLoading(false); }
+  };
+  const verifyPasswordResetOtp = async (email, otp) => {
+    setLoading(true);
+    try { return await authApi.verifyPasswordResetOtp(email, otp); } finally { setLoading(false); }
+  };
+  const resetPassword = async (payload) => {
+    setLoading(true);
+    try {
+      const { user, token } = await authApi.resetPassword(payload);
       persist(user, token);
       return user;
     } finally {
@@ -52,15 +111,24 @@ export function AuthProvider({ children }) {
   };
 
   const logout = () => persist(null, null);
+  const updateCurrentUser = (user) => persist(user);
 
   const value = useMemo(
     () => ({
       currentUser,
       loading,
       login,
+      verifyLoginOtp,
+      sendOtp,
+      sendSignupOtp,
+      signupWithOtp,
+      sendPasswordResetOtp,
+      verifyPasswordResetOtp,
+      resetPassword,
       register,
       logout,
-      homeFor: (role) => ROLE_HOME[role] || "/",
+      updateCurrentUser,
+      homeFor: (role) => ROLE_HOME[String(role || "").toLowerCase()] || "/",
     }),
     [currentUser, loading]
   );
