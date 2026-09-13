@@ -6,7 +6,9 @@ function buildBaseURL() {
       .toString()
       .trim();
 
-  if (!raw) return "/api";
+  if (!raw) {
+    return import.meta.env.PROD ? "https://krishiq.onrender.com/api" : "/api";
+  }
 
   const cleaned = raw.replace(/\/+$/, "");
   return cleaned.endsWith("/api") ? cleaned : `${cleaned}/api`;
@@ -14,7 +16,7 @@ function buildBaseURL() {
 
 const client = axios.create({
   baseURL: buildBaseURL(),
-  timeout: 12000,
+  timeout: 30000,
 });
 
 client.interceptors.request.use((config) => {

@@ -1,6 +1,10 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute.jsx";
 import Home from "../pages/Home.jsx";
+import About from "../pages/About.jsx";
+import KrishiqAi from "../pages/KrishiqAi.jsx";
+import ForFarmers from "../pages/ForFarmers.jsx";
+import Agritech from "../pages/Agritech.jsx";
 import AuthEntry from "../pages/AuthEntry.jsx";
 import NotFound from "../pages/NotFound.jsx";
 import FarmerLayout from "../layouts/FarmerLayout.jsx";
@@ -46,6 +50,10 @@ export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
+      <Route path="/about" element={<About />} />
+      <Route path="/krishiq-ai" element={<KrishiqAi />} />
+      <Route path="/for-farmers" element={<ForFarmers />} />
+      <Route path="/agritech" element={<Agritech />} />
       <Route path="/login" element={<AuthEntry />} />
       <Route path="/register" element={<AuthEntry />} />
       <Route path="/marketplace" element={<PublicMarketplace />} />

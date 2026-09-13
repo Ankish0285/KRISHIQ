@@ -26,10 +26,84 @@ export default function SuperAdminWorkspace() {
   const location = useLocation(); const navigate = useNavigate(); const { toast } = useToast();
   const [content, setContent] = useState(defaultContent); const [status, setStatus] = useState({ draft: false }); const [saving, setSaving] = useState(false); const [error, setError] = useState("");
   const activeId = new URLSearchParams(location.search).get("section") || "brand"; const active = sections.find(([id]) => id === activeId) || sections[0];
-  useEffect(() => { adminApi.settings().then((rows) => { const loaded = Object.fromEntries(rows.map((row) => [row.key, row.value])); setContent({ ...defaultContent, ...loaded }); setStatus({ draft: Boolean(loaded._draft), publishedAt: loaded._publishedAt }); }).catch((err) => setError(err.response?.data?.message || "Unable to load website content.")); }, []);
+  const extractErrorMessage = (err, fallback) => {
+    if (err?.response?.data?.message) return err.response.data.message;
+    if (typeof err?.response?.data === "string" && err.response.data.trim()) {
+      return err.response.data.length < 120 ? err.response.data.trim() : `Server error (${err.response.status})`;
+    }
+    if (err?.response?.status) {
+      return `Request failed with status ${err.response.status} (${err.response.statusText || "Error"})`;
+    }
+    if (err?.message) return err.message;
+    return fallback;
+  };
+
+  useEffect(() => {
+    adminApi
+      .settings()
+      .then((rows) => {
+        const loaded = Object.fromEntries(rows.map((row) => [row.key, row.value]));
+        setContent({ ...defaultContent, ...loaded });
+        setStatus({ draft: Boolean(loaded._draft), publishedAt: loaded._publishedAt });
+      })
+      .catch((err) => {
+        console.error("Settings load error:", {
+          status: err.response?.status,
+          statusText: err.response?.statusText,
+          endpoint: err.config?.url,
+          baseURL: err.config?.baseURL,
+          message: err.message,
+        });
+        setError(extractErrorMessage(err, "Unable to load website content."));
+      });
+  }, []);
+
   const setValue = (key, value) => setContent((current) => ({ ...current, [key]: value }));
-  const upload = async (file, onSuccess) => { if (!file) return; setSaving(true); setError(""); try { const result = await adminApi.uploadMedia(file); onSuccess(result); toast("Media uploaded. Save or publish to apply it."); } catch (err) { setError(err.response?.data?.message || "Unable to upload media."); } finally { setSaving(false); } };
-  const save = async (publish) => { setSaving(true); setError(""); try { const payload = { ...content, _publish: publish, _draft: !publish, _publishedAt: new Date().toISOString() }; await adminApi.updateSettings(payload); setContent(payload); setStatus({ draft: !publish, publishedAt: payload._publishedAt }); toast(publish ? "Website changes published." : "Draft saved."); } catch (err) { setError(err.response?.data?.message || "Unable to save website content."); } finally { setSaving(false); } };
+
+  const upload = async (file, onSuccess) => {
+    if (!file) return;
+    setSaving(true);
+    setError("");
+    try {
+      const result = await adminApi.uploadMedia(file);
+      onSuccess(result);
+      toast("Media uploaded. Save or publish to apply it.");
+    } catch (err) {
+      console.error("Media upload error:", {
+        status: err.response?.status,
+        statusText: err.response?.statusText,
+        endpoint: err.config?.url,
+        baseURL: err.config?.baseURL,
+        message: err.message,
+      });
+      setError(extractErrorMessage(err, "Unable to upload media."));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const save = async (publish) => {
+    setSaving(true);
+    setError("");
+    try {
+      const payload = { ...content, _publish: publish, _draft: !publish, _publishedAt: new Date().toISOString() };
+      await adminApi.updateSettings(payload);
+      setContent(payload);
+      setStatus({ draft: !publish, publishedAt: payload._publishedAt });
+      toast(publish ? "Website changes published." : "Draft saved.");
+    } catch (err) {
+      console.error("Save website content error:", {
+        status: err.response?.status,
+        statusText: err.response?.statusText,
+        endpoint: err.config?.url,
+        baseURL: err.config?.baseURL,
+        message: err.message,
+      });
+      setError(extractErrorMessage(err, "Unable to save website content."));
+    } finally {
+      setSaving(false);
+    }
+  };
   if (location.pathname === "/admin/audit-logs") return <AuditLogs />;
   if (location.pathname === "/admin/settings") return <Settings />;
   return <div><PageHeader title="Website Control" subtitle="Edit published KRISHIQ homepage content with a reviewable draft workflow." actions={<div className="flex gap-2"><Button variant="secondary" disabled={saving} onClick={() => save(false)}><Save className="h-4 w-4" /> Save Draft</Button><Button disabled={saving} onClick={() => save(true)}><Send className="h-4 w-4" /> Publish Changes</Button></div>} /><div className="mb-5 flex gap-2 overflow-x-auto pb-1">{sections.map(([id, title]) => <button key={id} type="button" onClick={() => navigate(`/admin/content?section=${id}`)} className={`whitespace-nowrap rounded-full border px-4 py-2 text-sm font-semibold ${id === active[0] ? "border-orange-600 bg-orange-600 text-white" : "border-slate-200 bg-white text-slate-600"}`}>{title}</button>)}</div>{error && <p className="mb-4 rounded-lg bg-rose-50 p-3 text-sm text-rose-600">{error}</p>}<Card className="max-w-5xl"><div className="mb-5 flex items-start justify-between"><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-orange-600">{active[1]}</p><h2 className="mt-1 text-xl font-bold">{active[1]} settings</h2></div><span className={`rounded-full px-3 py-1 text-xs font-semibold ${status.draft ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"}`}>{status.draft ? "Draft Saved" : "Published"}</span></div><Editor section={active[0]} content={content} setValue={setValue} upload={upload} saving={saving} /></Card></div>;

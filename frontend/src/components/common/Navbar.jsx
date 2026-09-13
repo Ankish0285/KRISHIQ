@@ -92,8 +92,8 @@ export default function Navbar({ settings = {} }) {
         <Link to="/" className="flex min-w-0 items-center gap-3">
           <BrandLogo src={settings.logoUrl} className="h-11 w-11 shrink-0" />
           <div className="min-w-0">
-            <p className="text-[17px] font-extrabold leading-none tracking-tight text-ink dark:text-[#F8FAFC]">{settings.brandName || "KRISHIQ"}</p>
-            <p className="mt-1 text-[11px] uppercase tracking-[0.18em] text-slate-500 dark:text-[#94A3B8]">{settings.brandLine || "AgriTech"}</p>
+            <p className="text-[17px] font-extrabold leading-none tracking-tight text-ink dark:text-[#F8FAFC]">{settings.brandName || "Krishiq"}</p>
+            <p className="mt-1 text-[11px] uppercase tracking-[0.18em] text-slate-500 dark:text-[#94A3B8]">{settings.brandLine || "Agritech"}</p>
           </div>
         </Link>
 

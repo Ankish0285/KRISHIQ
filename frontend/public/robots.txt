@@ -1,0 +1,24 @@
+User-agent: *
+Allow: /
+Allow: /marketplace
+Allow: /krishiq-ai
+Allow: /for-farmers
+Allow: /agritech
+Allow: /about
+Allow: /sitemap.xml
+Allow: /robots.txt
+Disallow: /login
+Disallow: /register
+Disallow: /cart
+Disallow: /checkout
+Disallow: /payment
+Disallow: /order-confirmation
+Disallow: /dashboard
+Disallow: /farmer/
+Disallow: /buyer/
+Disallow: /fpo/
+Disallow: /admin/
+Disallow: /super-admin/
+Disallow: /api/
+
+Sitemap: https://krishiq-beta.vercel.app/sitemap.xml

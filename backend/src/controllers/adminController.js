@@ -167,15 +167,53 @@ export const updateSettings = async (req, res, next) => {
       if (Array.isArray(value)) return value.length <= 100;
       return typeof value === 'object' && Object.keys(value).length <= 100;
     });
-    const settings = [];
-    for (const [key, value] of entries.slice(0, 80)) {
-      const targetKey = publish ? key : `draft:${key}`;
-      settings.push(await SiteSetting.findOneAndUpdate({ key: targetKey }, { key: targetKey, value, updatedBy: req.user._id }, { upsert: true, new: true }));
-      if (publish) await SiteSetting.deleteOne({ key: `draft:${key}` });
+
+    const targetEntries = entries.slice(0, 100);
+    if (targetEntries.length === 0) {
+      return res.json(successResponse([], 'No settings to update.'));
     }
-    await recordAudit({ req, action: publish ? 'website_published' : 'website_draft_saved', resourceType: 'SiteSetting', metadata: { keys: entries.map(([key]) => key), published: publish } });
-    return res.json(successResponse(settings, publish ? 'Website changes published.' : 'Website draft saved.'));
-  } catch (error) { next(error); }
+
+    const ops = targetEntries.map(([key, value]) => {
+      const targetKey = publish ? key : `draft:${key}`;
+      return {
+        updateOne: {
+          filter: { key: targetKey },
+          update: {
+            $set: {
+              key: targetKey,
+              value,
+              updatedBy: req.user._id,
+            },
+          },
+          upsert: true,
+        },
+      };
+    });
+
+    await SiteSetting.bulkWrite(ops);
+
+    if (publish) {
+      const draftKeys = targetEntries.map(([key]) => `draft:${key}`);
+      await SiteSetting.deleteMany({ key: { $in: draftKeys } });
+    }
+
+    await recordAudit({
+      req,
+      action: publish ? 'website_published' : 'website_draft_saved',
+      resourceType: 'SiteSetting',
+      metadata: { keys: targetEntries.map(([key]) => key), published: publish },
+    });
+
+    return res.json(
+      successResponse(
+        { updatedCount: ops.length },
+        publish ? 'Website changes published.' : 'Website draft saved.'
+      )
+    );
+  } catch (error) {
+    console.error('updateSettings error:', error.message);
+    next(error);
+  }
 };
 
 export const uploadAdminMedia = async (req, res, next) => {

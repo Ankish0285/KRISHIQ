@@ -20,21 +20,30 @@ import errorMiddleware from './middleware/errorMiddleware.js';
 
 const app = express();
 
-const allowlist = [
-  config.frontendUrl,
-  ...(config.nodeEnv !== 'production'
-    ? ['http://localhost:5173', 'http://127.0.0.1:5173']
-    : []),
-].filter(Boolean);
+const defaultOrigins = [
+  'https://krishiq-beta.vercel.app',
+  'https://krishiq.vercel.app',
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'http://localhost:5000',
+];
+
+const configuredOrigins = (config.frontendUrl || '')
+  .split(',')
+  .map((o) => o.trim().replace(/\/+$/, ''))
+  .filter(Boolean);
+
+const allowlist = Array.from(new Set([...defaultOrigins, ...configuredOrigins]));
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || allowlist.includes('*') || allowlist.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error('CORS blocked'));
+      if (!origin) return callback(null, true);
+      const normalizedOrigin = origin.replace(/\/+$/, '');
+      if (allowlist.includes('*') || allowlist.includes(normalizedOrigin)) {
+        return callback(null, true);
       }
+      return callback(new Error(`CORS blocked for origin: ${origin}`));
     },
     credentials: true,
   })

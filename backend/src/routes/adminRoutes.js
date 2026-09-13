@@ -32,8 +32,8 @@ router.get('/orders', listOrders);
 router.patch('/orders/:id/status', updateOrderStatus);
 router.get('/audit-logs', requireSuperAdmin, listAuditLogs);
 router.get('/settings', getSettings);
-router.patch('/settings', requireSuperAdmin, updateSettings);
-router.post('/media', requireSuperAdmin, uploadMedia, uploadAdminMedia);
+router.patch('/settings', authorizeRoles('admin', 'super_admin'), updateSettings);
+router.post('/media', authorizeRoles('admin', 'super_admin'), uploadMedia, uploadAdminMedia);
 router.post('/admins', requireSuperAdmin, createAdmin);
 
 export default router;
