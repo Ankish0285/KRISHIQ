@@ -1,29 +1,30 @@
 import { Link } from "react-router-dom";
-import { Facebook, Instagram, Linkedin, Twitter } from "lucide-react";
+import { Facebook, Instagram, Linkedin } from "lucide-react";
 import BrandLogo from "./BrandLogo.jsx";
 
 const cols = [
   {
     title: "Platform",
     links: [
-      { to: "/marketplace", label: "Marketplace" },
-      { to: "/#how-it-works", label: "How It Works", hash: true },
-      { to: "/#about", label: "About", hash: true },
-      { to: "/cart", label: "Cart" },
+      { to: "/marketplace", label: "Krishiq Marketplace" },
+      { to: "/krishiq-ai", label: "Krishiq AI" },
+      { to: "/for-farmers", label: "Krishiq for Farmers" },
+      { to: "/agritech", label: "Krishiq Agritech" },
     ],
   },
   {
     title: "Company",
     links: [
-      { to: "/#about", label: "About", hash: true },
+      { to: "/about", label: "About Krishiq" },
       { to: "/#how-it-works", label: "How It Works", hash: true },
-      { to: "/#farmers", label: "For Farmers", hash: true },
+      { to: "/#buyers", label: "For Buyers", hash: true },
       { to: "mailto:hello@krishiq.in", label: "Contact", external: true },
     ],
   },
   {
     title: "For Farmers",
     links: [
+      { to: "/for-farmers", label: "Overview for Farmers" },
       { to: "/login", label: "Add Produce" },
       { to: "/login", label: "My Produce" },
       { to: "/login", label: "Orders" },
@@ -33,7 +34,7 @@ const cols = [
   {
     title: "For Buyers",
     links: [
-      { to: "/login", label: "Marketplace" },
+      { to: "/marketplace", label: "Browse Marketplace" },
       { to: "/login", label: "Recommendations" },
       { to: "/login", label: "Orders" },
       { to: "/login", label: "Track Order" },

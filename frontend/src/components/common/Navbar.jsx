@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import BrandLogo from "./BrandLogo.jsx";
 import ThemeToggle from "./ThemeToggle.jsx";
@@ -12,12 +12,43 @@ import AuthModal from "./AuthModal.jsx";
 const links = [
   { href: "/", label: "Home" },
   { href: "/marketplace", label: "Marketplace" },
+  { href: "/krishiq-ai", label: "Krishiq AI" },
+  { href: "/for-farmers", label: "For Farmers" },
+  { href: "/agritech", label: "Agritech" },
   { href: "/#how-it-works", label: "How It Works" },
-  { href: "/#farmers", label: "For Farmers" },
-  { href: "/#buyers", label: "For Buyers" },
-  { href: "/#reviews", label: "Reviews" },
-  { href: "/#about", label: "About" },
+  { href: "/about", label: "About" },
 ];
+
+function navLabel(link, settings) {
+  if (link.label === "Marketplace") return settings.navMarketplaceLabel || link.label;
+  if (link.label === "How It Works") return settings.navHowLabel || link.label;
+  if (link.label === "For Farmers") return settings.navFarmerLabel || link.label;
+  if (link.label === "Agritech") return settings.navAgritechLabel || link.label;
+  if (link.label === "About") return settings.navAboutLabel || link.label;
+  return link.label;
+}
+
+function isNavActive(href, location) {
+  if (href.includes("#")) {
+    return location.pathname === "/" && location.hash === `#${href.split("#")[1]}`;
+  }
+  if (href === "/") return location.pathname === "/" && !location.hash;
+  return location.pathname === href;
+}
+
+function NavItem({ link, settings, className, onClick }) {
+  const location = useLocation();
+  const active = isNavActive(link.href, location);
+  const classes = className || clsx(
+    "relative py-2 text-[15px] font-medium text-slate-600 transition hover:text-primary-green dark:text-[#94A3B8] dark:hover:text-leaf",
+    active && "text-primary-green dark:text-leaf after:absolute after:inset-x-0 after:-bottom-1 after:h-0.5 after:bg-leaf after:content-['']"
+  );
+  const label = navLabel(link, settings);
+  if (link.href.includes("#")) {
+    return <a href={link.href} onClick={onClick} className={classes} aria-current={active ? "page" : undefined}>{label}</a>;
+  }
+  return <Link to={link.href} onClick={onClick} className={classes} aria-current={active ? "page" : undefined}>{label}</Link>;
+}
 
 export default function Navbar({ settings = {} }) {
   const [open, setOpen] = useState(false);
@@ -66,23 +97,10 @@ export default function Navbar({ settings = {} }) {
           </div>
         </Link>
 
-        <nav className="hidden items-center gap-7 lg:flex">
-          {links.map((l) => {
-            const label = l.label === "Marketplace" ? settings.navMarketplaceLabel || l.label : l.label === "How It Works" ? settings.navHowLabel || l.label : l.label === "For Farmers" ? settings.navFarmerLabel || l.label : l.label === "For Buyers" ? settings.navBuyerLabel || l.label : l.label === "Reviews" ? settings.navReviewsLabel || l.label : l.label === "About" ? settings.navAboutLabel || l.label : l.label;
-            return (
-            <a
-              key={l.label}
-              href={l.href}
-              aria-current={location.hash === l.href.split("#")[1] || (!location.hash && l.href === "/") ? "page" : undefined}
-              className={clsx(
-                "relative py-2 text-[15px] font-medium text-slate-600 transition hover:text-primary-green dark:text-[#94A3B8] dark:hover:text-leaf",
-                ((location.hash === l.href.split("#")[1]) || (!location.hash && l.href === "/")) && "text-primary-green dark:text-leaf after:absolute after:inset-x-0 after:-bottom-1 after:h-0.5 after:bg-leaf after:content-['']"
-              )}
-            >
-              {label}
-            </a>
-            );
-          })}
+        <nav className="hidden items-center gap-7 lg:flex" aria-label="Primary">
+          {links.map((l) => (
+            <NavItem key={l.label} link={l} settings={settings} />
+          ))}
         </nav>
 
         <div className="hidden items-center gap-2 lg:flex">
@@ -131,14 +149,9 @@ export default function Navbar({ settings = {} }) {
               </button>
             </div>
             <div className="grid gap-4 text-[16px] text-ink dark:text-[#F8FAFC]">
-              {links.map((l) => {
-                const label = l.label === "Marketplace" ? settings.navMarketplaceLabel || l.label : l.label === "How It Works" ? settings.navHowLabel || l.label : l.label === "For Farmers" ? settings.navFarmerLabel || l.label : l.label === "For Buyers" ? settings.navBuyerLabel || l.label : l.label === "Reviews" ? settings.navReviewsLabel || l.label : l.label === "About" ? settings.navAboutLabel || l.label : l.label;
-                return (
-                <a key={l.label} href={l.href} onClick={() => setOpen(false)}>
-                  {label}
-                </a>
-                    );
-                  })}
+              {links.map((l) => (
+                <NavItem key={l.label} link={l} settings={settings} className="text-[16px] text-ink dark:text-[#F8FAFC]" onClick={() => setOpen(false)} />
+              ))}
               <Button variant={loginVariant} className="w-full" onClick={() => { setOpen(false); setAuthTab("login"); }}>Login</Button>
               <Button className="w-full" onClick={() => { setOpen(false); setAuthTab("signup"); }}>Sign Up</Button>
             </div>
