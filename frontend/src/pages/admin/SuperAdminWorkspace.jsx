@@ -26,35 +26,18 @@ export default function SuperAdminWorkspace() {
   const location = useLocation(); const navigate = useNavigate(); const { toast } = useToast();
   const [content, setContent] = useState(defaultContent); const [status, setStatus] = useState({ draft: false }); const [saving, setSaving] = useState(false); const [error, setError] = useState("");
   const activeId = new URLSearchParams(location.search).get("section") || "brand"; const active = sections.find(([id]) => id === activeId) || sections[0];
-  const extractErrorMessage = (err, fallback) => {
-    if (err?.response?.data?.message) return err.response.data.message;
-    if (typeof err?.response?.data === "string" && err.response.data.trim()) {
-      return err.response.data.length < 120 ? err.response.data.trim() : `Server error (${err.response.status})`;
-    }
-    if (err?.response?.status) {
-      return `Request failed with status ${err.response.status} (${err.response.statusText || "Error"})`;
-    }
-    if (err?.message) return err.message;
-    return fallback;
-  };
-
   useEffect(() => {
     adminApi
       .settings()
       .then((rows) => {
-        const loaded = Object.fromEntries(rows.map((row) => [row.key, row.value]));
-        setContent({ ...defaultContent, ...loaded });
-        setStatus({ draft: Boolean(loaded._draft), publishedAt: loaded._publishedAt });
+        if (Array.isArray(rows)) {
+          const loaded = Object.fromEntries(rows.map((row) => [row.key, row.value]));
+          setContent((prev) => ({ ...defaultContent, ...prev, ...loaded }));
+          setStatus({ draft: Boolean(loaded._draft), publishedAt: loaded._publishedAt });
+        }
       })
       .catch((err) => {
-        console.error("Settings load error:", {
-          status: err.response?.status,
-          statusText: err.response?.statusText,
-          endpoint: err.config?.url,
-          baseURL: err.config?.baseURL,
-          message: err.message,
-        });
-        setError(extractErrorMessage(err, "Unable to load website content."));
+        setError(err.response?.data?.message || "Unable to load website content.");
       });
   }, []);
 
@@ -69,14 +52,7 @@ export default function SuperAdminWorkspace() {
       onSuccess(result);
       toast("Media uploaded. Save or publish to apply it.");
     } catch (err) {
-      console.error("Media upload error:", {
-        status: err.response?.status,
-        statusText: err.response?.statusText,
-        endpoint: err.config?.url,
-        baseURL: err.config?.baseURL,
-        message: err.message,
-      });
-      setError(extractErrorMessage(err, "Unable to upload media."));
+      setError(err.response?.data?.message || "Unable to upload media.");
     } finally {
       setSaving(false);
     }
@@ -92,14 +68,7 @@ export default function SuperAdminWorkspace() {
       setStatus({ draft: !publish, publishedAt: payload._publishedAt });
       toast(publish ? "Website changes published." : "Draft saved.");
     } catch (err) {
-      console.error("Save website content error:", {
-        status: err.response?.status,
-        statusText: err.response?.statusText,
-        endpoint: err.config?.url,
-        baseURL: err.config?.baseURL,
-        message: err.message,
-      });
-      setError(extractErrorMessage(err, "Unable to save website content."));
+      setError(err.response?.data?.message || "Unable to save website content.");
     } finally {
       setSaving(false);
     }

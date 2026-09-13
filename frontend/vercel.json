@@ -21,7 +21,7 @@
       "destination": "https://krishiq.onrender.com/api/:match*"
     },
     {
-      "source": "/((?!.*\\..*).*)",
+      "source": "/((?!api/|.*\\..*).*)",
       "destination": "/index.html"
     }
   ]

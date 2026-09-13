@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import { ArrowRight, Check, CircleDollarSign, CloudSun, MapPin, PackageCheck, Route, Search, ShieldCheck, Sparkles, Sprout, Truck, Users } from "lucide-react";
 import Navbar from "../components/common/Navbar.jsx";
 import Footer from "../components/common/Footer.jsx";
-import BrandLogo from "../components/common/BrandLogo.jsx";
 import HeroMediaCarousel from "../components/common/HeroMediaCarousel.jsx";
 import FullBleedHero from "../components/common/FullBleedHero.jsx";
 import ReviewsSection from "../components/common/ReviewsSection.jsx";

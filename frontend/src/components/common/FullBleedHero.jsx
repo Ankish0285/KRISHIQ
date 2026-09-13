@@ -1,6 +1,5 @@
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, Sparkles } from "lucide-react";
-import BrandLogo from "./BrandLogo.jsx";
 import { Button } from "./ui.jsx";
 import HeroMediaCarousel from "./HeroMediaCarousel.jsx";
 
@@ -19,7 +18,7 @@ export default function FullBleedHero({ settings }) {
         <h1 className="max-w-3xl text-[clamp(2.75rem,6vw,5.8rem)] font-black leading-[1.02] tracking-[-0.035em] text-white">{highlightHeading(settings.heroHeading)}</h1>
         <p className="mt-6 max-w-xl text-[16px] leading-relaxed text-[#F1F5F3] sm:text-[18px]">{settings.heroSubheading}</p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row"><Button size="lg" className="w-full sm:w-auto" onClick={() => navigate(settings.heroCtaLink || "/register")}>{settings.heroCtaText} <ArrowRight className="h-4 w-4" /></Button><Button size="lg" variant="onDark" className="border-white/35 bg-[#06150F]/35 text-white backdrop-blur-md hover:bg-white/15 w-full sm:w-auto" onClick={() => navigate(settings.heroSecondaryCtaLink || "/marketplace")}>{settings.heroSecondaryCtaText}</Button></div>
-        <div className="mt-6 flex items-center gap-3 text-sm text-[#E2EAE5]"><BrandLogo src={settings.logoUrl} className="h-9 w-9 border border-white/20" /><span className="drop-shadow-md">{settings.brandSubtitle || "Built to simplify the journey from produce to purchase."}</span></div>
+        <div className="mt-6 text-sm text-[#E2EAE5]"><span className="drop-shadow-md">{settings.brandSubtitle || "Built to simplify the journey from produce to purchase."}</span></div>
       </div>
     </div>
   </section>;

@@ -204,9 +204,12 @@ export const updateSettings = async (req, res, next) => {
       metadata: { keys: targetEntries.map(([key]) => key), published: publish },
     });
 
+    const targetKeys = targetEntries.map(([key]) => (publish ? key : `draft:${key}`));
+    const savedRecords = await SiteSetting.find({ key: { $in: targetKeys } }).lean();
+
     return res.json(
       successResponse(
-        { updatedCount: ops.length },
+        savedRecords,
         publish ? 'Website changes published.' : 'Website draft saved.'
       )
     );
