@@ -7,7 +7,7 @@ import {
   seoForPath,
   websiteJsonLd,
 } from "./site.js";
-import { BRAND_LOGO } from "../brand.js";
+import { useSiteSettings } from "../context/SiteSettingsContext.jsx";
 
 function upsertMeta(attr, key, content) {
   if (!content) return;
@@ -21,11 +21,16 @@ function upsertMeta(attr, key, content) {
   element.setAttribute("content", content);
 }
 
-function upsertLink(rel, href) {
-  let element = document.head.querySelector(`link[rel="${rel}"]`);
+function upsertLink(rel, href, type) {
+  // Match on both rel and (optionally) type so multiple icon variants coexist.
+  const selector = type
+    ? `link[rel="${rel}"][type="${type}"]`
+    : `link[rel="${rel}"]`;
+  let element = document.head.querySelector(selector);
   if (!element) {
     element = document.createElement("link");
     element.setAttribute("rel", rel);
+    if (type) element.setAttribute("type", type);
     document.head.appendChild(element);
   }
   element.setAttribute("href", href);
@@ -48,6 +53,10 @@ export default function SeoManager() {
   const canonical = `${SITE_URL}${seo.path === "/" ? "/" : seo.path}`;
   const robots = seo.robots || (seo.noindex ? "noindex,nofollow" : "index,follow");
 
+  // Get the admin-saved brand logo from the global context.
+  // This is the same value BrandLogo uses — one source of truth for all logo locations.
+  const { brandLogo } = useSiteSettings();
+
   useEffect(() => {
     document.title = seo.title;
     upsertMeta("name", "description", seo.description);
@@ -66,11 +75,15 @@ export default function SeoManager() {
     upsertMeta("name", "twitter:image", DEFAULT_OG_IMAGE);
     upsertJsonLd("krishiq-website-jsonld", websiteJsonLd());
 
-    // Keep the browser favicon in sync with BRAND_LOGO (the single source of truth).
-    // This covers route changes and SPA navigation — the <link> tags in index.html
-    // only fire once on initial load, so we keep them current here.
-    upsertLink("icon", BRAND_LOGO);
-    upsertLink("apple-touch-icon", BRAND_LOGO);
-  }, [canonical, robots, seo.description, seo.path, seo.title]);
+    // ── Favicon sync ──────────────────────────────────────────────────────────
+    // Always keep the browser tab icon in sync with the admin-saved brand logo.
+    // We update the DOM directly because index.html only sets the initial value;
+    // after the SPA boots and settings load, this keeps it current on every
+    // route change AND whenever brandLogo changes (admin saves a new logo).
+    upsertLink("icon", brandLogo, "image/png");
+    upsertLink("apple-touch-icon", brandLogo);
+    // ─────────────────────────────────────────────────────────────────────────
+  }, [canonical, robots, seo.description, seo.path, seo.title, brandLogo]);
+
   return null;
 }

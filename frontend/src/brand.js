@@ -1,31 +1,23 @@
 /**
- * KRISHIQ BRAND CONFIGURATION
- * ============================
- * This is the ONE place to change the brand logo for the entire application.
+ * KRISHIQ STATIC BRAND FALLBACK
+ * ==============================
+ * BRAND_LOGO is the last-resort fallback used when:
+ *   a) The SiteSettingsContext has not yet loaded (first render / SSR).
+ *   b) The admin has not saved a custom logo to the database.
+ *   c) The admin-saved Cloudinary URL is broken or unreachable.
  *
- * BRAND_LOGO is automatically used by:
- *   - Header / Navbar
- *   - Sidebar (dashboard + admin)
- *   - Footer
- *   - Login page
- *   - Register page
- *   - 404 / error pages
- *   - Mobile navigation
- *   - Browser favicon / tab icon
- *   - Apple touch icon
- *   - SEO / JSON-LD structured data
+ * The LIVE brand logo (the one that changes when the super admin saves a new
+ * logo in Website Control) comes from:
+ *   SiteSettingsContext → publicApi.siteSettings() → GET /public/site-settings
+ *   → MongoDB key "logoUrl"
  *
- * HOW TO CHANGE THE LOGO:
- *   1. Drop your new logo file into /public  (e.g. /public/logo.png)
- *   2. Update BRAND_LOGO below to the new path or URL.
- *   3. Redeploy — every location updates automatically.
+ * To update the static fallback (e.g. initial deploy):
+ *   1. Place your logo file in /public (e.g. /public/logo.png).
+ *   2. Change BRAND_LOGO below to match.
+ *   3. Redeploy the frontend.
  *
- * RULES:
- *   - Use a path starting with "/" for files in /public (Vite serves them as-is).
- *   - Or use a full https:// URL (e.g. a Cloudinary permanent URL).
- *   - NEVER reference this constant from user-profile/avatar code.
- *   - The CMS logoUrl (from admin settings) is an *optional override* layered
- *     on top; if it is missing or broken, this value is always the fallback.
+ * DO NOT use this constant as the primary logo source in components.
+ * Use useSiteSettings().brandLogo or the <BrandLogo> component instead.
  */
 
 export const BRAND_LOGO = "/logo.png";
