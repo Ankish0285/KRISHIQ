@@ -7,6 +7,7 @@ import {
   seoForPath,
   websiteJsonLd,
 } from "./site.js";
+import { BRAND_LOGO } from "../brand.js";
 
 function upsertMeta(attr, key, content) {
   if (!content) return;
@@ -64,7 +65,12 @@ export default function SeoManager() {
     upsertMeta("name", "twitter:description", seo.description);
     upsertMeta("name", "twitter:image", DEFAULT_OG_IMAGE);
     upsertJsonLd("krishiq-website-jsonld", websiteJsonLd());
-  }, [canonical, robots, seo.description, seo.path, seo.title]);
 
+    // Keep the browser favicon in sync with BRAND_LOGO (the single source of truth).
+    // This covers route changes and SPA navigation — the <link> tags in index.html
+    // only fire once on initial load, so we keep them current here.
+    upsertLink("icon", BRAND_LOGO);
+    upsertLink("apple-touch-icon", BRAND_LOGO);
+  }, [canonical, robots, seo.description, seo.path, seo.title]);
   return null;
 }

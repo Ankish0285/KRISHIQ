@@ -1,7 +1,9 @@
+import { BRAND_LOGO } from "../brand.js";
+
 export const SITE_URL = "https://krishiq-beta.vercel.app";
 export const SITE_NAME = "Krishiq";
 export const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.png`;
-export const DEFAULT_LOGO = `${SITE_URL}/logo.png`;
+export const DEFAULT_LOGO = BRAND_LOGO.startsWith("http") ? BRAND_LOGO : `${SITE_URL}${BRAND_LOGO}`;
 
 export const HOME_TITLE = "Krishiq – AI-Powered Agritech Platform for Farmers";
 export const HOME_DESCRIPTION =
