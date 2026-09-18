@@ -48,7 +48,7 @@ export default function Footer({ settings = {} }) {
       <div className="page-wrap grid gap-10 py-14 md:grid-cols-2 lg:grid-cols-6">
         <div className="lg:col-span-2">
           <div className="flex items-center gap-3">
-            <BrandLogo src={settings.footerLogo || settings.logoUrl} className="h-14 w-14" />
+            <BrandLogo src={settings.footerLogo || settings.logoUrl || undefined} className="h-14 w-14" />
             <div>
               <p className="text-xl font-extrabold">{settings.brandName || "Krishiq"}</p>
               <p className="mt-1 text-[14px] text-[#94A3B8]">{settings.footerText || "Smart Farming. Direct Markets. Better Future."}</p>
